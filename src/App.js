@@ -168,15 +168,15 @@ function PageLayout() {
 
 const Header = () => {
     return (
-        <div className='navbar'>
-            <Link to='/'>
-                <h1>Home</h1>
+        <div className='navbar flex'>
+            <Link to='/' className='mr-4'>
+                <h1 className="text-3xl font-bold">Home</h1>
             </Link>
-            <Link to={'/album'}>
-                <h1>Album</h1>
+            <Link to={'/album'} className='mr-4'>
+                <h1 className="text-3xl font-bold">Album</h1>
             </Link>
             <Link to={'/favorites'}>
-                <h1>Favorites</h1>
+                <h1 className="text-3xl font-bold">Favorites</h1>
             </Link>
         </div>
     )
@@ -204,7 +204,7 @@ const router = createBrowserRouter([
 ])
 
 export default function App() {
-    const [favorites, setFavorites] = useState([1]);
+    const [favorites, setFavorites] = useState([]);
 
     return (
         <AppContext.Provider value={{ favorites: favorites, setFavorites: setFavorites }}>
