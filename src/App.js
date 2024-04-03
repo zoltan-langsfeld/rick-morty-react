@@ -3,7 +3,9 @@ import {
     createBrowserRouter, Link, Outlet,
     RouterProvider,
 } from "react-router-dom";
-import {useState, useEffect} from "react";
+import {useState, useEffect, createContext, useContext} from "react";
+
+const AppContext = createContext();
 
 
 function Album() {
@@ -33,7 +35,7 @@ function Characters() {
         <div>
             {characters ? (
                 characters.map((character) => (
-                    <Character name={character.name} imageUri={character.image} />
+                    <Character id={character.id} name={character.name} imageUri={character.image} />
                 ))
             ) : (
                 <p>Loading...</p>
@@ -42,13 +44,81 @@ function Characters() {
     );
 }
 
-function Character({ name, imageUri: imgUri}) {
+function Favorites() {
+    return (
+        <div>
+            <SearchBar />
+            <FavoriteCharacters />
+        </div>
+    );
+}
+
+function FavoriteCharacters() {
+    const [favoriteCharacters, setFavoriteCharacters] = useState([]);
+    const { favorites, setFavorites} = useContext(AppContext);
+
+    const apiUrl = "https://rickandmortyapi.com/api/character/" + favorites.join(",");
+    console.log(apiUrl)
+
+    useEffect(() => {
+        fetch(apiUrl, {
+            method: "GET",
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (Array.isArray(data)) {
+                    setFavoriteCharacters(data)
+                } else {
+                    const updatedFavoriteCharacters = [data];
+                    setFavoriteCharacters(updatedFavoriteCharacters);
+                }
+            })
+            .catch((error) => console.log(error));
+    }, []);
+
+
+    return (
+        <div>
+            {favoriteCharacters ? (
+                favoriteCharacters.map((character) => (
+                    <Character id={character.id} name={character.name} imageUri={character.image} />
+                ))
+            ) : (
+                <p>Loading...</p>
+            )}
+        </div>
+    );
+}
+
+
+
+function Character({ id, name, imageUri: imgUri}) {
+    const { favorites, setFavorites} = useContext(AppContext);
+
+    const isFavorite = favorites.includes(id);
+
+    const handleCheckboxChange = () => {
+        if (isFavorite) {
+            // Remove the character from favorites
+            const updatedFavorites = favorites.filter(favorite => favorite !== id);
+            setFavorites(updatedFavorites);
+        } else {
+            // Add the character to favorites
+            const updatedFavorites = [...favorites, id];
+            setFavorites(updatedFavorites);
+        }
+    };
+
     return (
         <div>
             <img src={imgUri} alt="Character"/>
             <p>{name}</p>
             <form>
-                <input type="checkbox" />
+                <input
+                    type="checkbox"
+                    checked={isFavorite}
+                    onChange={handleCheckboxChange}
+                />
             </form>
         </div>
     );
@@ -127,12 +197,18 @@ const router = createBrowserRouter([
             },
             {
                 path: '/favorites',
-                element: <Album />,
+                element: <Favorites />,
             },
         ],
     },
 ])
 
 export default function App() {
-    return <RouterProvider router={router} />;
+    const [favorites, setFavorites] = useState([1]);
+
+    return (
+        <AppContext.Provider value={{ favorites: favorites, setFavorites: setFavorites }}>
+            <RouterProvider router={router} />
+        </AppContext.Provider>
+    );
 };
