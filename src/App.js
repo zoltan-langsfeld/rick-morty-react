@@ -3,23 +3,41 @@ import {
     createBrowserRouter, Link, Outlet,
     RouterProvider,
 } from "react-router-dom";
+import {useState, useEffect} from "react";
 
 
 function Album() {
     return (
         <div>
             <SearchBar />
-            <Characters characters={CHARACTERS} />
+            <Characters />
         </div>
     );
 }
 
-function Characters({ characters }) {
+function Characters() {
+    const [characters, setCharacters] = useState(null);
+    useEffect(() => {
+        fetch("https://rickandmortyapi.com/api/character", {
+            method: "GET",
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                setCharacters(data.results);
+            })
+            .catch((error) => console.log(error));
+    }, []);
+
+
     return (
         <div>
-            {characters.map((character) => (
-                <Character name={character.name} imageUri={character.imageUri} />
-            ))}
+            {characters ? (
+                characters.map((character) => (
+                    <Character name={character.name} imageUri={character.image} />
+                ))
+            ) : (
+                <p>Loading...</p>
+            )}
         </div>
     );
 }
@@ -44,10 +62,22 @@ function SearchBar() {
     );
 }
 
-function Tip({ tipOfTheDay }) {
+function Tip() {
+    const [tip, setTip] = useState(null);
+    useEffect(() => {
+        fetch("https://api.adviceslip.com/advice", {
+            method: "GET",
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                setTip(data.slip.advice);
+            })
+            .catch((error) => console.log(error));
+    }, []);
+
     return (
         <div>
-            <p>{tipOfTheDay}</p>
+            <p>{tip}</p>
         </div>
     )
 }
@@ -77,11 +107,6 @@ const Header = () => {
     )
 }
 
-const TIPOFTHEDAY = "Don't promise what you can't deliver."
-const CHARACTERS = [{ name: "Glasses Morty", imageUri: "https://rickandmortyapi.com/api/character/avatar/143.jpeg" },
-    { name: "Visor Rick", imageUri: "https://rickandmortyapi.com/api/character/avatar/487.jpeg" }]
-
-
 const router = createBrowserRouter([
     {
         path: '/',
@@ -89,7 +114,7 @@ const router = createBrowserRouter([
         children: [
             {
                 path: '/',
-                element: <Tip tipOfTheDay={TIPOFTHEDAY}/>,
+                element: <Tip/>,
             },
             {
                 path: '/album',
