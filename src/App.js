@@ -77,7 +77,12 @@ function Tip() {
 
     return (
         <div>
-            <p>{tip}</p>
+
+            {tip ? (
+                <p>{tip}</p>)
+             : (
+                <p>Loading...</p>
+            )}
         </div>
     )
 }
