@@ -9,18 +9,23 @@ const AppContext = createContext();
 
 
 function Album() {
+    const [filterText, setFilterText] = useState("");
+
     return (
         <div>
-            <SearchBar />
-            <Characters />
+            <SearchBar filterText={filterText} onFilterTextChange={setFilterText} />
+            <Characters filterText={filterText}/>
         </div>
     );
 }
 
-function Characters() {
+function Characters({filterText}) {
+    const url = filterText? "https://rickandmortyapi.com/api/character?name=" + filterText : "https://rickandmortyapi.com/api/character";
+    console.log(url)
+
     const [characters, setCharacters] = useState(null);
     useEffect(() => {
-        fetch("https://rickandmortyapi.com/api/character", {
+        fetch(url, {
             method: "GET",
         })
             .then((response) => response.json())
@@ -28,7 +33,7 @@ function Characters() {
                 setCharacters(data.results);
             })
             .catch((error) => console.log(error));
-    }, []);
+    }, [filterText]);
 
 
     return (
@@ -47,7 +52,6 @@ function Characters() {
 function Favorites() {
     return (
         <div>
-            <SearchBar />
             <FavoriteCharacters />
         </div>
     );
@@ -124,10 +128,10 @@ function Character({ id, name, imageUri: imgUri}) {
     );
 }
 
-function SearchBar() {
+function SearchBar({filterText, onFilterTextChange}) {
     return (
         <form>
-            <input type="text" placeholder="Search..." />
+            <input type="text" placeholder="Search..." value={filterText} onChange={(e) => onFilterTextChange(e.target.value)}/>
         </form>
     );
 }
